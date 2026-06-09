@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import {
   LayoutDashboard,
   GraduationCap,
@@ -12,6 +13,8 @@ import {
   Gauge,
   Building2,
   Sparkles,
+  Menu,
+  X,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
@@ -58,6 +61,11 @@ function Wordmark() {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  // Lesson/checkpoint routes get a focused, full-screen treatment on mobile:
+  // hide the bottom tab bar so the lesson's own footer is reachable.
+  const isFocusRoute = /^\/learn\/[^/]+\/[^/]+/.test(pathname);
 
   return (
     <div className="min-h-screen md:pl-60">
@@ -82,18 +90,68 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Mobile top bar */}
-      <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-background/80 px-4 py-3 backdrop-blur md:hidden">
+      <header className="sticky top-0 z-40 flex items-center justify-between border-b border-border bg-background/80 px-4 py-3 backdrop-blur md:hidden">
         <Wordmark />
-        <ThemeToggle />
+        <div className="flex items-center gap-1">
+          <ThemeToggle />
+          <button
+            type="button"
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen((o) => !o)}
+            className="grid h-8 w-8 place-items-center rounded-md text-muted-foreground transition hover:bg-secondary hover:text-foreground"
+          >
+            {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
       </header>
 
+      {/* Mobile full-nav overlay */}
+      {menuOpen && (
+        <div className="fixed inset-0 z-30 md:hidden">
+          <div
+            className="absolute inset-0 bg-background/60 backdrop-blur-sm"
+            onClick={() => setMenuOpen(false)}
+          />
+          <nav className="absolute inset-x-0 top-[57px] max-h-[70vh] overflow-y-auto border-b border-border bg-sidebar p-3 shadow-xl">
+            {NAV.map((item) => {
+              const active = isActive(pathname, item.href);
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMenuOpen(false)}
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition ${
+                    active
+                      ? "bg-accent text-accent-foreground"
+                      : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                  }`}
+                >
+                  <Icon className="h-4 w-4 shrink-0" />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+      )}
+
       {/* Content */}
-      <main className="mx-auto w-full max-w-5xl px-4 pb-28 pt-6 sm:px-6 md:pb-12 md:pt-10">
+      <main
+        className={`mx-auto w-full max-w-5xl px-4 pt-6 sm:px-6 md:pt-10 ${
+          isFocusRoute ? "pb-6 md:pb-12" : "pb-28 md:pb-12"
+        }`}
+      >
         {children}
       </main>
 
-      {/* Mobile bottom tab bar */}
-      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-border bg-sidebar/90 backdrop-blur md:hidden">
+      {/* Mobile bottom tab bar (hidden during a focused lesson) */}
+      <nav
+        className={`fixed inset-x-0 bottom-0 z-30 grid-cols-5 border-t border-border bg-sidebar/90 backdrop-blur md:hidden ${
+          isFocusRoute ? "hidden" : "grid"
+        }`}
+      >
         {MOBILE.map((item) => {
           const active = isActive(pathname, item.href);
           const Icon = item.icon;

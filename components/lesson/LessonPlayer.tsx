@@ -92,7 +92,7 @@ export function LessonPlayer({
       });
     } else {
       setPageIdx((i) => i + 1);
-      document.getElementById("lesson-body")?.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   }
 
@@ -139,7 +139,7 @@ export function LessonPlayer({
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-3rem)] flex-col">
+    <div>
       {/* Header */}
       <header className="flex items-center gap-3 border-b border-border pb-3">
         <Link
@@ -182,14 +182,17 @@ export function LessonPlayer({
       </div>
 
       {/* Body */}
-      <div id="lesson-body" className="flex-1 overflow-y-auto py-6">
+      <div id="lesson-body" className="py-6">
         <div className="mx-auto max-w-2xl">
           <PageRenderer key={pageIdx} page={lesson.pages[pageIdx]} setDone={setDone(pageIdx)} />
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="flex items-center justify-between gap-3 border-t border-border pt-3">
+      {/* Footer — sticks to the bottom of the viewport so Next is always reachable */}
+      <footer
+        className="sticky bottom-0 -mx-4 flex items-center justify-between gap-3 border-t border-border bg-background/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6"
+        style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 0.75rem)" }}
+      >
         <button
           type="button"
           onClick={() => pageIdx > 0 && setPageIdx((i) => i - 1)}
