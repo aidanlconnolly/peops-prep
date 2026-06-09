@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { ArrowLeft, ArrowRight, Check, Trophy, RotateCcw } from "lucide-react";
 import { recordCheckpoint } from "@/lib/actions/curriculum";
+import { PRACTICE_LINKS } from "@/lib/curriculum";
 import type { Unit } from "@/lib/curriculum/types";
 
 export function CheckpointRunner({ unit }: { unit: Unit }) {
@@ -77,6 +78,14 @@ export function CheckpointRunner({ unit }: { unit: Unit }) {
             Back to roadmap
           </Link>
         </div>
+        {passed && PRACTICE_LINKS[unit.slug] && (
+          <Link
+            href={PRACTICE_LINKS[unit.slug].href}
+            className="mt-4 inline-block text-sm font-medium text-primary hover:underline"
+          >
+            {PRACTICE_LINKS[unit.slug].label} →
+          </Link>
+        )}
       </div>
     );
   }

@@ -9,6 +9,7 @@ import {
   ArrowRight,
   TrendingUp,
   Flame,
+  GraduationCap,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { ReadinessTrend } from "@/components/dashboard/ReadinessTrend";
@@ -62,6 +63,46 @@ export default async function DashboardPage() {
           interviews.
         </p>
       </header>
+
+      {/* Continue learning */}
+      {d.nextStep.kind !== "done" ? (
+        <Link href={d.nextStep.href}>
+          <Card className="flex flex-row items-center gap-4 border-primary/30 bg-accent/30 p-5 transition hover:border-primary/50">
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-primary text-2xl text-primary-foreground">
+              {d.nextStep.unitIcon}
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-medium uppercase tracking-wide text-primary">
+                {d.nextStep.kind === "checkpoint" ? "Next — unit checkpoint" : "Continue learning"}
+              </p>
+              <p className="truncate font-medium text-foreground">
+                {d.nextStep.kind === "checkpoint"
+                  ? `${d.nextStep.unitTitle} checkpoint`
+                  : d.nextStep.lessonTitle}
+              </p>
+              <p className="truncate text-xs text-muted-foreground">
+                {d.nextStep.unitTitle} · {d.lessonsDone}/{d.totalLessons} lessons done
+              </p>
+            </div>
+            <span className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">
+              {d.nextStep.kind === "checkpoint" ? "Take it" : "Continue"}
+              <ArrowRight className="h-4 w-4" />
+            </span>
+          </Card>
+        </Link>
+      ) : (
+        <Card className="flex flex-row items-center gap-4 border-success/30 bg-success/5 p-5">
+          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-success/10 text-success">
+            <GraduationCap className="h-6 w-6" />
+          </span>
+          <div className="flex-1">
+            <p className="font-medium text-foreground">Curriculum complete</p>
+            <p className="text-xs text-muted-foreground">
+              All {d.totalLessons} lessons done. Keep sharp with Drills, Cases, and the Mock Superday.
+            </p>
+          </div>
+        </Card>
+      )}
 
       {/* Readiness + queue + streak */}
       <div className="grid gap-4 sm:grid-cols-3">

@@ -5,6 +5,7 @@ import { useCallback, useState, useTransition } from "react";
 import { ArrowLeft, ArrowRight, Check, PartyPopper } from "lucide-react";
 import type { Lesson, LessonPage, Unit } from "@/lib/curriculum/types";
 import { markLessonDone } from "@/lib/actions/curriculum";
+import { PRACTICE_LINKS } from "@/lib/curriculum";
 import {
   ReadPage,
   FrameworkPage,
@@ -119,6 +120,14 @@ export function LessonPlayer({
               className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
             >
               Take unit checkpoint <ArrowRight className="h-4 w-4" />
+            </Link>
+          )}
+          {PRACTICE_LINKS[unit.slug] && (
+            <Link
+              href={PRACTICE_LINKS[unit.slug].href}
+              className="text-xs font-medium text-primary hover:underline"
+            >
+              {PRACTICE_LINKS[unit.slug].label} →
             </Link>
           )}
           <Link href="/learn" className="text-xs text-muted-foreground hover:text-foreground">

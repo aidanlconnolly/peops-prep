@@ -4,6 +4,7 @@ import { and, eq, isNotNull } from "drizzle-orm";
 import { db, schema } from "@/lib/db/client";
 import { currentUserId } from "@/lib/user";
 import { DOMAIN_LABELS, type Domain } from "@/lib/content/types";
+import { getNextStep, totalAuthoredLessons, type NextStep } from "@/lib/curriculum";
 
 export type DomainMastery = {
   domain: Domain;
@@ -24,6 +25,9 @@ export type DashboardData = {
   weakAreas: DomainMastery[];
   trend: TrendPoint[];
   attemptsCount: number;
+  nextStep: NextStep;
+  lessonsDone: number;
+  totalLessons: number;
 };
 
 function dayKey(ms: number): string {
@@ -62,19 +66,25 @@ function verdictFor(readiness: number): string {
 export async function getDashboard(): Promise<DashboardData> {
   const userId = currentUserId();
 
-  const [topics, questions, attempts, cards, doneSessions] = await Promise.all([
-    db.select().from(schema.topics),
-    db.select({ id: schema.questions.id, topicId: schema.questions.topicId }).from(schema.questions),
-    db.select().from(schema.attempts).where(eq(schema.attempts.userId, userId)),
-    db
-      .select()
-      .from(schema.fsrsCards)
-      .where(and(eq(schema.fsrsCards.userId, userId), eq(schema.fsrsCards.refType, "concept"))),
-    db
-      .select()
-      .from(schema.sessions)
-      .where(and(eq(schema.sessions.userId, userId), isNotNull(schema.sessions.endedAt))),
-  ]);
+  const [topics, questions, attempts, cards, doneSessions, lessons, checkpoints] =
+    await Promise.all([
+      db.select().from(schema.topics),
+      db.select({ id: schema.questions.id, topicId: schema.questions.topicId }).from(schema.questions),
+      db.select().from(schema.attempts).where(eq(schema.attempts.userId, userId)),
+      db
+        .select()
+        .from(schema.fsrsCards)
+        .where(and(eq(schema.fsrsCards.userId, userId), eq(schema.fsrsCards.refType, "concept"))),
+      db
+        .select()
+        .from(schema.sessions)
+        .where(and(eq(schema.sessions.userId, userId), isNotNull(schema.sessions.endedAt))),
+      db.select().from(schema.lessonProgress).where(eq(schema.lessonProgress.userId, userId)),
+      db
+        .select()
+        .from(schema.checkpointAttempts)
+        .where(and(eq(schema.checkpointAttempts.userId, userId), eq(schema.checkpointAttempts.passed, true))),
+    ]);
 
   const domainOfTopic = new Map(topics.map((t) => [t.id, t.domain as Domain]));
   const domainOfQuestion = new Map(
@@ -152,15 +162,26 @@ export async function getDashboard(): Promise<DashboardData> {
       ? Number((superdays[0].scorecard as { overall?: number })?.overall ?? 0)
       : null;
 
+  // Curriculum progress as a readiness signal.
+  const totalLessons = totalAuthoredLessons();
+  const lessonsDone = lessons.length;
+  const curriculumPct = totalLessons > 0 ? (lessonsDone / totalLessons) * 100 : 0;
+
   const touchedMasteries = masteryByDomain.filter((m) => m.touched);
   const avgMastery =
     touchedMasteries.length > 0
       ? touchedMasteries.reduce((a, m) => a + m.mastery, 0) / touchedMasteries.length
       : 0;
+  // Readiness = equal-weight mean of whatever signals exist: domain mastery,
+  // curriculum progress, and the most recent mock-Superday score.
+  const components: number[] = [];
+  if (touchedMasteries.length > 0) components.push(avgMastery);
+  if (lessonsDone > 0) components.push(curriculumPct);
+  if (recentSuperday != null) components.push(recentSuperday);
   const readiness =
-    recentSuperday != null
-      ? Math.round(0.8 * avgMastery + 0.2 * recentSuperday)
-      : Math.round(avgMastery);
+    components.length > 0
+      ? Math.round(components.reduce((a, b) => a + b, 0) / components.length)
+      : 0;
 
   // Trend from completed sessions over time.
   const trend: TrendPoint[] = doneSessions
@@ -180,12 +201,18 @@ export async function getDashboard(): Promise<DashboardData> {
   const streak = computeStreak([
     ...attempts.map((a) => a.createdAt),
     ...cards.filter((c) => c.lastReviewedAt).map((c) => c.lastReviewedAt!),
+    ...lessons.map((l) => l.completedAt),
   ]);
 
   const weakAreas = [...masteryByDomain]
     .filter((m) => m.touched)
     .sort((a, b) => a.mastery - b.mastery)
     .slice(0, 3);
+
+  const nextStep = getNextStep(
+    lessons.map((l) => l.lessonSlug),
+    checkpoints.map((c) => c.unitSlug),
+  );
 
   return {
     readiness,
@@ -197,5 +224,8 @@ export async function getDashboard(): Promise<DashboardData> {
     weakAreas,
     trend,
     attemptsCount: attempts.length,
+    nextStep,
+    lessonsDone,
+    totalLessons,
   };
 }
