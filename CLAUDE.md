@@ -6,6 +6,8 @@ Guidance for Claude Code when working in **PeOps Prep**.
 
 A Duolingo-style web app for **private equity portfolio-operations / value-creation interview prep** (KKR Capstone, Bain Capital Portfolio Group, Vista/VCG, Blackstone PortOps, Apollo APPS, Carlyle, CD&R, TPG Ops). FSRS spaced repetition, multi-format quizzes, an interactive paper-LBO drill, AI-graded operational cases & behaviorals, a mock-Superday simulator, firm intel, and a readiness dashboard. Port **5550**.
 
+Deployed on **Vercel** at **https://peops-prep.vercel.app** (auto-deploys from `main`). Requires `ANTHROPIC_API_KEY`, `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN` set in Vercel Project Settings to function at runtime.
+
 Closely mirrors the sibling app **`../foundry`** (same stack); reuse its patterns when extending.
 
 ## Stack
