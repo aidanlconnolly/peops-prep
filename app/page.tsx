@@ -7,54 +7,45 @@ import {
   Gauge,
   Building2,
   ArrowRight,
+  TrendingUp,
+  Flame,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { ensureConceptDeck, getDeckStats } from "@/lib/actions/review";
+import { ReadinessTrend } from "@/components/dashboard/ReadinessTrend";
+import { ensureConceptDeck } from "@/lib/actions/review";
+import { getDashboard } from "@/lib/actions/dashboard";
+import type { Domain } from "@/lib/content/types";
 
 export const dynamic = "force-dynamic";
 
+const DOMAIN_ROUTE: Record<Domain, string> = {
+  fundamentals: "/learn",
+  returns: "/drills",
+  diagnostics: "/cases",
+  behavioral: "/behavioral",
+  technicals: "/behavioral",
+  firm: "/firms",
+};
+
 const DOMAINS = [
-  {
-    href: "/learn",
-    label: "Fundamentals",
-    desc: "Operating-partner model, 100-day plans, EBITDA bridges.",
-    icon: Layers,
-  },
-  {
-    href: "/drills",
-    label: "Returns & Drills",
-    desc: "Paper LBO, MOIC/IRR, the three return levers.",
-    icon: Target,
-  },
-  {
-    href: "/cases",
-    label: "Operational Cases",
-    desc: "Diagnose a PortCo, prioritize value-creation levers.",
-    icon: BookOpen,
-  },
-  {
-    href: "/behavioral",
-    label: "Behavioral",
-    desc: "Influence without authority, STAR, ops commitment.",
-    icon: MessagesSquare,
-  },
-  {
-    href: "/superday",
-    label: "Mock Superday",
-    desc: "The full Capstone-style chain, timed and scored.",
-    icon: Gauge,
-  },
-  {
-    href: "/firms",
-    label: "Firm Intel",
-    desc: "Capstone, Bain Capital, Vista, Blackstone & more.",
-    icon: Building2,
-  },
+  { href: "/learn", label: "Fundamentals", desc: "Operating-partner model, 100-day plans, EBITDA bridges.", icon: Layers },
+  { href: "/drills", label: "Returns & Drills", desc: "Paper LBO, MOIC/IRR, the three return levers.", icon: Target },
+  { href: "/cases", label: "Operational Cases", desc: "Diagnose a PortCo, prioritize value-creation levers.", icon: BookOpen },
+  { href: "/behavioral", label: "Behavioral", desc: "Influence without authority, STAR, ops commitment.", icon: MessagesSquare },
+  { href: "/superday", label: "Mock Superday", desc: "The full Capstone-style chain, timed and scored.", icon: Gauge },
+  { href: "/firms", label: "Firm Intel", desc: "Capstone, Bain Capital, Vista, Blackstone & more.", icon: Building2 },
 ];
+
+function readinessTone(r: number): string {
+  if (r >= 80) return "text-success";
+  if (r >= 65) return "text-primary";
+  if (r >= 45) return "text-warning";
+  return "text-muted-foreground";
+}
 
 export default async function DashboardPage() {
   await ensureConceptDeck();
-  const stats = await getDeckStats();
+  const d = await getDashboard();
 
   return (
     <div className="space-y-8">
@@ -72,18 +63,17 @@ export default async function DashboardPage() {
         </p>
       </header>
 
-      {/* Readiness + queue placeholders (wired in later phases) */}
+      {/* Readiness + queue + streak */}
       <div className="grid gap-4 sm:grid-cols-3">
         <Card className="p-5">
           <p className="text-xs uppercase tracking-wide text-muted-foreground">
             Readiness
           </p>
-          <p className="mt-2 font-mono text-4xl font-semibold tnum text-foreground">
-            —
+          <p className={`mt-2 font-mono text-4xl font-semibold tnum ${readinessTone(d.readiness)}`}>
+            {d.readiness}
+            <span className="text-base text-muted-foreground">/100</span>
           </p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Builds from mastery + mock scores.
-          </p>
+          <p className="mt-1 text-xs text-muted-foreground">{d.verdict}</p>
         </Card>
         <Link href="/learn">
           <Card className="p-5 transition hover:border-primary/40">
@@ -91,10 +81,10 @@ export default async function DashboardPage() {
               Due today
             </p>
             <p className="mt-2 font-mono text-4xl font-semibold tnum text-foreground">
-              {stats.due}
+              {d.due}
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              {stats.total} cards in your deck.
+              {d.totalCards} cards in your deck.
             </p>
           </Card>
         </Link>
@@ -102,14 +92,88 @@ export default async function DashboardPage() {
           <p className="text-xs uppercase tracking-wide text-muted-foreground">
             Streak
           </p>
-          <p className="mt-2 font-mono text-4xl font-semibold tnum text-foreground">
-            0
+          <p className="mt-2 flex items-center gap-1.5 font-mono text-4xl font-semibold tnum text-foreground">
+            {d.streak}
+            {d.streak > 0 && <Flame className="h-6 w-6 text-warning" />}
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Days active in a row.
+            {d.streak === 1 ? "day" : "days"} active in a row.
           </p>
         </Card>
       </div>
+
+      {/* Mastery by domain */}
+      <section className="grid gap-4 lg:grid-cols-2">
+        <Card className="p-5">
+          <h2 className="mb-4 text-sm font-semibold text-muted-foreground">
+            Mastery by domain
+          </h2>
+          <div className="space-y-3">
+            {d.masteryByDomain.map((m) => (
+              <Link key={m.domain} href={DOMAIN_ROUTE[m.domain]} className="block">
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-foreground">{m.label}</span>
+                    <span className="tnum text-muted-foreground">
+                      {m.touched ? `${m.mastery}%` : "—"}
+                    </span>
+                  </div>
+                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+                    <div
+                      className={`h-full rounded-full ${
+                        m.mastery >= 70 ? "bg-success" : m.mastery >= 40 ? "bg-primary" : "bg-warning"
+                      }`}
+                      style={{ width: `${m.touched ? m.mastery : 0}%` }}
+                    />
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </Card>
+
+        <Card className="flex flex-col p-5">
+          <h2 className="mb-4 text-sm font-semibold text-muted-foreground">
+            Readiness trend
+          </h2>
+          {d.trend.length >= 2 ? (
+            <ReadinessTrend data={d.trend} />
+          ) : (
+            <div className="flex flex-1 flex-col items-center justify-center gap-2 py-8 text-center">
+              <TrendingUp className="h-6 w-6 text-muted-foreground" />
+              <p className="max-w-xs text-sm text-muted-foreground">
+                Complete timed quiz sessions and mock Superdays to chart your
+                readiness over time.
+              </p>
+            </div>
+          )}
+        </Card>
+      </section>
+
+      {/* Weak-area surfacing */}
+      {d.weakAreas.length > 0 && (
+        <Card className="border-warning/30 bg-warning/5 p-5">
+          <h2 className="mb-1 text-sm font-semibold text-warning">
+            Sharpen these next
+          </h2>
+          <p className="mb-3 text-xs text-muted-foreground">
+            Your lowest-mastery domains — drill them to move the readiness needle.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {d.weakAreas.map((m) => (
+              <Link
+                key={m.domain}
+                href={DOMAIN_ROUTE[m.domain]}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-sm transition hover:border-primary/40"
+              >
+                {m.label}
+                <span className="tnum text-xs text-muted-foreground">{m.mastery}%</span>
+                <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
+              </Link>
+            ))}
+          </div>
+        </Card>
+      )}
 
       {/* Domain grid */}
       <section>
@@ -117,22 +181,20 @@ export default async function DashboardPage() {
           Train by domain
         </h2>
         <div className="grid gap-3 sm:grid-cols-2">
-          {DOMAINS.map((d) => {
-            const Icon = d.icon;
+          {DOMAINS.map((dom) => {
+            const Icon = dom.icon;
             return (
-              <Link key={d.href} href={d.href}>
+              <Link key={dom.href} href={dom.href}>
                 <Card className="group flex h-full flex-row items-start gap-4 p-5 transition hover:border-primary/40">
                   <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-accent text-accent-foreground">
                     <Icon className="h-5 w-5" />
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
-                      <h3 className="font-medium text-foreground">{d.label}</h3>
+                      <h3 className="font-medium text-foreground">{dom.label}</h3>
                       <ArrowRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 transition group-hover:translate-x-0.5 group-hover:opacity-100" />
                     </div>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {d.desc}
-                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground">{dom.desc}</p>
                   </div>
                 </Card>
               </Link>
