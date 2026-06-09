@@ -6,6 +6,11 @@ import { UNIT_PAPER_LBO } from "./04-paper-lbo";
 import { UNIT_RETURN_ATTRIBUTION } from "./05-return-attribution";
 import { UNIT_VALUE_CREATION_LEVERS } from "./06-value-creation-levers";
 import { UNIT_DIAGNOSING_A_PORTCO } from "./07-diagnosing-a-portco";
+import { UNIT_INFLUENCE_WITHOUT_AUTHORITY } from "./08-influence-without-authority";
+import { UNIT_STAR_AND_STORIES } from "./09-star-and-stories";
+import { UNIT_OPERATIONAL_TECHNICALS } from "./10-operational-technicals";
+import { UNIT_FIRM_INTEL } from "./11-firm-intel";
+import { UNIT_THE_SUPERDAY } from "./12-the-superday";
 
 /** All fully-authored ("built") units, in roadmap order. */
 export const UNITS: Unit[] = [
@@ -19,6 +24,13 @@ export const UNITS: Unit[] = [
   // Stage 3 — Operational diagnostics
   UNIT_VALUE_CREATION_LEVERS,
   UNIT_DIAGNOSING_A_PORTCO,
+  // Stage 4 — Behavioral & influence
+  UNIT_INFLUENCE_WITHOUT_AUTHORITY,
+  UNIT_STAR_AND_STORIES,
+  // Stage 5 — The interview
+  UNIT_OPERATIONAL_TECHNICALS,
+  UNIT_FIRM_INTEL,
+  UNIT_THE_SUPERDAY,
 ];
 
 export function findUnit(slug: string): Unit | undefined {
