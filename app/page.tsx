@@ -9,6 +9,9 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { ensureConceptDeck, getDeckStats } from "@/lib/actions/review";
+
+export const dynamic = "force-dynamic";
 
 const DOMAINS = [
   {
@@ -49,7 +52,10 @@ const DOMAINS = [
   },
 ];
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  await ensureConceptDeck();
+  const stats = await getDeckStats();
+
   return (
     <div className="space-y-8">
       <header>
@@ -79,17 +85,19 @@ export default function DashboardPage() {
             Builds from mastery + mock scores.
           </p>
         </Card>
-        <Card className="p-5">
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">
-            Due today
-          </p>
-          <p className="mt-2 font-mono text-4xl font-semibold tnum text-foreground">
-            0
-          </p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Spaced-repetition review queue.
-          </p>
-        </Card>
+        <Link href="/learn">
+          <Card className="p-5 transition hover:border-primary/40">
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">
+              Due today
+            </p>
+            <p className="mt-2 font-mono text-4xl font-semibold tnum text-foreground">
+              {stats.due}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {stats.total} cards in your deck.
+            </p>
+          </Card>
+        </Link>
         <Card className="p-5">
           <p className="text-xs uppercase tracking-wide text-muted-foreground">
             Streak
