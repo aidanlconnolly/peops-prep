@@ -177,6 +177,19 @@ export const sessions = sqliteTable("sessions", {
   scorecard: text("scorecard", { mode: "json" }).$type<Record<string, unknown>>(),
 });
 
+/** Reusable behavioral anecdotes the mentor can reference, tagged to competencies. */
+export const stories = sqliteTable("stories", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  title: text("title").notNull(),
+  competencies: text("competencies", { mode: "json" })
+    .$type<Competency[]>()
+    .notNull()
+    .default([]),
+  body: text("body").notNull(),
+  createdAt: integer("created_at").notNull(),
+});
+
 export const userStats = sqliteTable("user_stats", {
   userId: text("user_id").primaryKey(),
   streakDays: integer("streak_days").notNull().default(0),
@@ -201,3 +214,4 @@ export type FsrsCard = typeof fsrsCards.$inferSelect;
 export type Attempt = typeof attempts.$inferSelect;
 export type SessionRow = typeof sessions.$inferSelect;
 export type UserStats = typeof userStats.$inferSelect;
+export type Story = typeof stories.$inferSelect;

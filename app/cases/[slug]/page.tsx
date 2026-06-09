@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Markdown } from "@/components/Markdown";
 import { ExhibitTable } from "@/components/ExhibitTable";
+import { CaseWorkbench } from "@/components/cases/CaseWorkbench";
 import { getCaseBySlug } from "@/lib/db/queries";
 
 export const dynamic = "force-dynamic";
@@ -71,16 +72,7 @@ export default async function CasePage({
         </ul>
       </Card>
 
-      {c.modelAnswer && (
-        <details className="rounded-lg border border-border bg-card p-5">
-          <summary className="cursor-pointer text-sm font-semibold text-muted-foreground">
-            Model answer (reveal)
-          </summary>
-          <div className="mt-3">
-            <Markdown>{c.modelAnswer}</Markdown>
-          </div>
-        </details>
-      )}
+      <CaseWorkbench caseId={c.id} modelAnswer={c.modelAnswer} />
     </div>
   );
 }
