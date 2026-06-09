@@ -25,7 +25,7 @@ type NavItem = {
 };
 
 const NAV: NavItem[] = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/", label: "Home", icon: LayoutDashboard },
   { href: "/learn", label: "Learn", icon: GraduationCap },
   { href: "/review", label: "Review", icon: Layers },
   { href: "/drills", label: "Drills", icon: Target },
@@ -53,7 +53,7 @@ function Wordmark() {
         <Gauge className="h-4 w-4" />
       </span>
       <span className="font-mono text-sm font-semibold tracking-[0.18em] text-foreground">
-        PEOPS
+        PE OPS
       </span>
     </Link>
   );

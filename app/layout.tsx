@@ -21,7 +21,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PeOps Prep — PE Operations Interview Prep",
+  title: "Pe Ops Prep — PE Operations Interview Prep",
   description:
     "Duolingo-style training for private equity portfolio-operations and value-creation interviews.",
 };
