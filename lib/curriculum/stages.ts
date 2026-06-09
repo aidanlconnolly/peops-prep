@@ -40,11 +40,11 @@ export const UNIT_OUTLINE: UnitPreview[] = [
   { slug: "value-creation-plan", stage: 1, order: 2, icon: "🗺️", title: "The value-creation plan", tagline: "100-day plan, EBITDA bridge, and sequencing." },
   { slug: "returns-foundations", stage: 1, order: 3, icon: "📈", title: "Returns, conceptually", tagline: "Three levers, MOIC vs IRR, and leverage." },
 
-  // Stage 2 — preview
-  { slug: "paper-lbo", stage: 2, order: 1, icon: "🧮", title: "The paper LBO", tagline: "Entry EV to IRR, validated step by step." },
-  { slug: "return-attribution", stage: 2, order: 2, icon: "💧", title: "Return attribution", tagline: "Decompose a deal's return into the three levers." },
+  // Stage 2 — built
+  { slug: "paper-lbo", stage: 2, order: 1, icon: "🧮", title: "The paper LBO", tagline: "Build a deal from sources & uses to IRR — the math you'll do cold." },
+  { slug: "return-attribution", stage: 2, order: 2, icon: "💧", title: "Return attribution", tagline: "Decompose a deal's equity gain into the three levers." },
 
-  // Stage 3 — preview
+  // Stage 3 — built
   { slug: "value-creation-levers", stage: 3, order: 1, icon: "🔧", title: "Value-creation levers", tagline: "Pricing, commercial, cost, procurement, working capital, M&A." },
   { slug: "diagnosing-a-portco", stage: 3, order: 2, icon: "🩺", title: "Diagnosing a PortCo", tagline: "Frame, benchmark, prioritize — diagnose before you act." },
 
