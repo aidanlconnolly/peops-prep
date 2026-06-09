@@ -413,4 +413,145 @@ export const QUESTIONS: QuestionSeed[] = [
     timeLimitSec: 30,
     tags: ["rule-of-72"],
   },
+
+  // ── Firm intel ──
+  {
+    id: "q-firm-operator-led",
+    topicId: "firm-models",
+    type: "mc",
+    prompt:
+      "Which firm is most associated with pioneering the **operator-led** model, where operating partners (often former CEOs) are integral to the investment thesis?",
+    choices: [
+      { id: "a", text: "KKR Capstone" },
+      { id: "b", text: "Clayton, Dubilier & Rice (CD&R)" },
+      { id: "c", text: "Vista Equity Partners" },
+      { id: "d", text: "Apollo" },
+    ],
+    answer: { type: "mc", correct: ["b"], multi: false },
+    explanation:
+      "CD&R pioneered the operator-led model — senior operating partners (often ex-CEOs) sit at the heart of the thesis, not in a separate support function.",
+    difficulty: 2,
+    timeLimitSec: 45,
+    tags: ["firms", "models"],
+  },
+  {
+    id: "q-firm-centralized-set",
+    topicId: "firm-models",
+    type: "mc",
+    prompt: "Select ALL that run a primarily **centralized** ops model.",
+    choices: [
+      { id: "a", text: "KKR Capstone" },
+      { id: "b", text: "Blackstone Portfolio Operations" },
+      { id: "c", text: "Carlyle" },
+      { id: "d", text: "TPG Operations" },
+    ],
+    answer: { type: "mc", correct: ["a", "b"], multi: true },
+    explanation:
+      "Capstone and Blackstone PortOps are centralized pooled teams; Carlyle and TPG lean embedded/sector-aligned.",
+    difficulty: 2,
+    timeLimitSec: 60,
+    tags: ["firms", "models"],
+  },
+  {
+    id: "q-firm-vista",
+    topicId: "firm-models",
+    type: "scenario",
+    prompt:
+      "You can speak fluently about NRR, CAC payback, and the Rule of 40. Which ops group best rewards that?",
+    choices: [
+      {
+        id: "a",
+        text: "Vista Consulting Group (VCG)",
+        rationale: "Correct — Vista is software-specialized and applies a standardized SaaS value-creation playbook.",
+      },
+      {
+        id: "b",
+        text: "CD&R",
+        rationale: "More diversified/industrial and operator-led; SaaS metrics aren't the core lens.",
+      },
+      {
+        id: "c",
+        text: "Apollo APPS",
+        rationale: "Strong on cost/procurement across a value-oriented portfolio, not SaaS-specialized.",
+      },
+      {
+        id: "d",
+        text: "Carlyle",
+        rationale: "Sector-aligned and embedded, not SaaS-playbook-driven.",
+      },
+    ],
+    answer: { type: "scenario", correct: "a" },
+    explanation:
+      "Vista/VCG is the software specialist — fluency in SaaS metrics maps directly to its standardized playbook model.",
+    difficulty: 2,
+    timeLimitSec: 60,
+    tags: ["firms"],
+  },
+  {
+    id: "q-firm-blackstone",
+    topicId: "firm-models",
+    type: "mc",
+    prompt:
+      "Blackstone Portfolio Operations is especially known for driving value through what, leveraging its scale?",
+    choices: [
+      { id: "a", text: "Cross-portfolio programs (e.g. group purchasing, healthcare benefits)" },
+      { id: "b", text: "High-frequency trading" },
+      { id: "c", text: "Pure financial engineering" },
+      { id: "d", text: "Founder-led product design" },
+    ],
+    answer: { type: "mc", correct: ["a"], multi: false },
+    explanation:
+      "Blackstone leverages its portfolio scale for cross-cutting programs like group purchasing and healthcare benefits.",
+    difficulty: 2,
+    timeLimitSec: 45,
+    tags: ["firms"],
+  },
+  {
+    id: "q-firm-mba-access",
+    topicId: "firm-models",
+    type: "scenario",
+    prompt:
+      "As an incoming MBA + ex-MBB consultant who is lighter on heavy LBO modeling, which seat plays MOST to your strengths?",
+    choices: [
+      {
+        id: "a",
+        text: "A centralized portfolio-ops group (e.g. KKR Capstone)",
+        rationale: "Correct — operational cases + behavioral are the core screen, and the modeling bar is lighter than an investment seat.",
+      },
+      {
+        id: "b",
+        text: "A deal-side investing associate role",
+        rationale: "Modeling- and structuring-intensive — exactly the area you're lighter on.",
+      },
+      {
+        id: "c",
+        text: "A quant trading desk",
+        rationale: "Unrelated skill set.",
+      },
+      {
+        id: "d",
+        text: "A credit underwriting seat",
+        rationale: "Heavy on financial structuring, not operational value creation.",
+      },
+    ],
+    answer: { type: "scenario", correct: "a" },
+    explanation:
+      "Centralized ops groups screen on operational cases and behavioral fit; consulting diagnosis + execution is the edge, and modeling is lighter.",
+    difficulty: 2,
+    timeLimitSec: 60,
+    tags: ["firms", "fit"],
+  },
+  {
+    id: "q-firm-fill-capstone",
+    topicId: "firm-models",
+    type: "fill",
+    prompt:
+      "KKR's centralized portfolio-operations team is branded as KKR ______. (one word)",
+    choices: null,
+    answer: { type: "fill", accepted: ["capstone"] },
+    explanation: "KKR's ops team is **Capstone**.",
+    difficulty: 1,
+    timeLimitSec: 30,
+    tags: ["firms"],
+  },
 ];

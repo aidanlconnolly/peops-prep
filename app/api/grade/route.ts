@@ -10,11 +10,26 @@ import type { RefType } from "@/lib/content/types";
 export const runtime = "nodejs";
 
 const BodySchema = z.object({
-  kind: z.enum(["case", "behavioral", "technical"]),
+  kind: z.enum(["case", "behavioral", "technical", "adhoc"]),
   refId: z.string(),
   userAnswer: z.string(),
   context: z.string().optional(),
   sessionId: z.string().optional(),
+  // Only for kind "adhoc" (prompts not stored in the DB, e.g. Superday fit Qs).
+  adhoc: z
+    .object({
+      prompt: z.string(),
+      dimensions: z.array(
+        z.object({
+          key: z.string(),
+          label: z.string(),
+          weight: z.number(),
+          guidance: z.string().optional(),
+        }),
+      ),
+      modelAnswer: z.string().optional(),
+    })
+    .optional(),
 });
 
 export async function POST(req: Request) {
@@ -31,7 +46,15 @@ export async function POST(req: Request) {
   let modelAnswer: string | undefined;
   let refType: RefType;
 
-  if (body.kind === "case") {
+  if (body.kind === "adhoc") {
+    if (!body.adhoc) {
+      return NextResponse.json({ error: "missing adhoc" }, { status: 400 });
+    }
+    dimensions = body.adhoc.dimensions;
+    prompt = body.adhoc.prompt;
+    modelAnswer = body.adhoc.modelAnswer;
+    refType = "technical";
+  } else if (body.kind === "case") {
     const rows = await db
       .select()
       .from(schema.cases)

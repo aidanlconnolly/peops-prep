@@ -22,12 +22,16 @@ function shuffle<T>(arr: T[]): T[] {
  */
 export async function getQuizQuestions(opts?: {
   types?: QuestionType[];
+  topicIds?: string[];
   limit?: number;
 }): Promise<Question[]> {
   const all = await db.select().from(schema.questions);
   let pool = all;
   if (opts?.types && opts.types.length > 0) {
     pool = pool.filter((q) => opts.types!.includes(q.type));
+  }
+  if (opts?.topicIds && opts.topicIds.length > 0) {
+    pool = pool.filter((q) => opts.topicIds!.includes(q.topicId));
   }
   const shuffled = shuffle(pool);
   return opts?.limit ? shuffled.slice(0, opts.limit) : shuffled;

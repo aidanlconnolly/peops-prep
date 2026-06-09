@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Building2, ArrowUpRight } from "lucide-react";
+import { Building2, ArrowUpRight, Brain } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { listFirms } from "@/lib/db/queries";
@@ -18,18 +18,26 @@ export default async function FirmsPage() {
 
   return (
     <div className="space-y-6">
-      <header>
-        <p className="text-xs font-medium uppercase tracking-[0.18em] text-primary">
-          Firm Intel
-        </p>
-        <h1 className="mt-2 font-serif text-3xl font-semibold tracking-tight">
-          The ops platforms
-        </h1>
-        <p className="mt-2 max-w-2xl text-muted-foreground">
-          Model, interview process, comp, and MBA accessibility for the major
-          portfolio-operations groups. Comp figures are approximate — re-verify
-          before an interview.
-        </p>
+      <header className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-primary">
+            Firm Intel
+          </p>
+          <h1 className="mt-2 font-serif text-3xl font-semibold tracking-tight">
+            The ops platforms
+          </h1>
+          <p className="mt-2 max-w-2xl text-muted-foreground">
+            Model, interview process, comp, and MBA accessibility for the major
+            portfolio-operations groups. Comp figures are approximate — re-verify
+            before an interview.
+          </p>
+        </div>
+        <Link
+          href="/firms/quiz"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-border px-4 py-2 text-sm font-medium transition hover:bg-secondary"
+        >
+          <Brain className="h-4 w-4" /> Test yourself
+        </Link>
       </header>
 
       <div className="grid gap-3 sm:grid-cols-2">
