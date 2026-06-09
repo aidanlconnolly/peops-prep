@@ -177,6 +177,34 @@ export const sessions = sqliteTable("sessions", {
   scorecard: text("scorecard", { mode: "json" }).$type<Record<string, unknown>>(),
 });
 
+/** Structured-curriculum lesson completion — one row per completed lesson. */
+export const lessonProgress = sqliteTable(
+  "lesson_progress",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull(),
+    unitSlug: text("unit_slug").notNull(),
+    lessonSlug: text("lesson_slug").notNull(),
+    score: integer("score").notNull().default(100),
+    completedAt: integer("completed_at").notNull(),
+  },
+  (t) => [uniqueIndex("lesson_user_slug_idx").on(t.userId, t.lessonSlug)],
+);
+
+/** Unit checkpoint attempts — a unit is "complete" once an attempt passes. */
+export const checkpointAttempts = sqliteTable(
+  "checkpoint_attempts",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull(),
+    unitSlug: text("unit_slug").notNull(),
+    score: integer("score").notNull(),
+    passed: integer("passed", { mode: "boolean" }).notNull(),
+    takenAt: integer("taken_at").notNull(),
+  },
+  (t) => [index("checkpoint_user_unit_idx").on(t.userId, t.unitSlug)],
+);
+
 /** Reusable behavioral anecdotes the mentor can reference, tagged to competencies. */
 export const stories = sqliteTable("stories", {
   id: text("id").primaryKey(),
@@ -215,3 +243,5 @@ export type Attempt = typeof attempts.$inferSelect;
 export type SessionRow = typeof sessions.$inferSelect;
 export type UserStats = typeof userStats.$inferSelect;
 export type Story = typeof stories.$inferSelect;
+export type LessonProgress = typeof lessonProgress.$inferSelect;
+export type CheckpointAttempt = typeof checkpointAttempts.$inferSelect;

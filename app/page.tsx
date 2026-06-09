@@ -75,7 +75,7 @@ export default async function DashboardPage() {
           </p>
           <p className="mt-1 text-xs text-muted-foreground">{d.verdict}</p>
         </Card>
-        <Link href="/learn">
+        <Link href="/review">
           <Card className="p-5 transition hover:border-primary/40">
             <p className="text-xs uppercase tracking-wide text-muted-foreground">
               Due today

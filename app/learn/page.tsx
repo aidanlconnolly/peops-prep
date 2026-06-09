@@ -1,53 +1,64 @@
 import Link from "next/link";
-import { ArrowRight, Layers } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { ReviewSession } from "@/components/review/ReviewSession";
-import { ensureConceptDeck, getDueCards, getDeckStats } from "@/lib/actions/review";
+import { Layers, ArrowRight } from "lucide-react";
+import { Roadmap } from "@/components/curriculum/Roadmap";
+import {
+  getStages,
+  getUnitOutline,
+  getUnits,
+} from "@/lib/curriculum";
+import { getRoadmapSummary } from "@/lib/actions/curriculum";
 
 export const dynamic = "force-dynamic";
 
 export default async function LearnPage() {
-  // Seed any new concepts into the deck, then load what's due.
-  await ensureConceptDeck();
-  const [due, stats] = await Promise.all([getDueCards(40), getDeckStats()]);
+  const summary = await getRoadmapSummary();
+  const stages = getStages();
+  const unitOutline = getUnitOutline();
+  const builtUnits = getUnits();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-xs font-medium uppercase tracking-[0.18em] text-primary">
-            Fundamentals
+            Learning journey
           </p>
-          <h1 className="mt-2 font-serif text-3xl font-semibold tracking-tight">
-            Daily review
+          <h1 className="mt-2 font-serif text-3xl font-semibold tracking-tight sm:text-4xl">
+            Learn the fundamentals
           </h1>
-          <p className="mt-2 text-muted-foreground">
-            Spaced-repetition flashcards. Rate yourself honestly — FSRS schedules
-            the next look.
+          <p className="mt-2 max-w-2xl text-muted-foreground">
+            A taught path from the operating model to interview-ready. Each lesson
+            teaches first, then quizzes you — pass the unit checkpoint to unlock
+            what&apos;s next.
           </p>
         </div>
         <Link
-          href="/browse/concepts"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+          href="/review"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-border px-4 py-2 text-sm font-medium transition hover:bg-secondary"
         >
-          Browse all {stats.total} cards <ArrowRight className="h-4 w-4" />
+          <Layers className="h-4 w-4" /> Flashcard review
         </Link>
       </header>
 
-      {due.length > 0 ? (
-        <ReviewSession cards={due} />
-      ) : (
-        <Card className="mx-auto flex max-w-md flex-col items-center gap-3 py-14 text-center">
-          <span className="grid h-12 w-12 place-items-center rounded-full bg-accent text-accent-foreground">
-            <Layers className="h-6 w-6" />
-          </span>
-          <h2 className="font-serif text-xl font-semibold">Nothing due</h2>
-          <p className="max-w-xs text-sm text-muted-foreground">
-            All {stats.total} cards are scheduled for later. Missed quiz items will
-            also resurface here.
-          </p>
-        </Card>
-      )}
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <span className="tnum font-medium text-foreground">
+          {summary.lessonsDoneCount}
+        </span>
+        <span>of {summary.totalAuthoredLessons} lessons complete</span>
+        <ArrowRight className="h-3.5 w-3.5" />
+        <span className="tnum font-medium text-foreground">
+          {summary.unitsCompleted.length}
+        </span>
+        <span>units passed</span>
+      </div>
+
+      <Roadmap
+        stages={stages}
+        unitOutline={unitOutline}
+        builtUnits={builtUnits}
+        unitsCompleted={summary.unitsCompleted}
+        lessonsCompleted={summary.lessonsCompleted}
+      />
     </div>
   );
 }
