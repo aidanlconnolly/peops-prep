@@ -177,9 +177,14 @@ export const sessions = sqliteTable("sessions", {
   scorecard: text("scorecard", { mode: "json" }).$type<Record<string, unknown>>(),
 });
 
-/** Structured-curriculum lesson completion — one row per completed lesson. */
+/**
+ * Structured-curriculum lesson completion — one row per completed lesson.
+ * Table name is namespaced `peops_*` because the production Turso DB is shared
+ * with the language-tutor app, which already owns generic `lesson_progress` /
+ * `checkpoint_attempts` tables (with a different schema).
+ */
 export const lessonProgress = sqliteTable(
-  "lesson_progress",
+  "peops_lesson_progress",
   {
     id: text("id").primaryKey(),
     userId: text("user_id").notNull(),
@@ -188,12 +193,12 @@ export const lessonProgress = sqliteTable(
     score: integer("score").notNull().default(100),
     completedAt: integer("completed_at").notNull(),
   },
-  (t) => [uniqueIndex("lesson_user_slug_idx").on(t.userId, t.lessonSlug)],
+  (t) => [uniqueIndex("peops_lesson_user_slug_idx").on(t.userId, t.lessonSlug)],
 );
 
 /** Unit checkpoint attempts — a unit is "complete" once an attempt passes. */
 export const checkpointAttempts = sqliteTable(
-  "checkpoint_attempts",
+  "peops_checkpoint_attempts",
   {
     id: text("id").primaryKey(),
     userId: text("user_id").notNull(),
@@ -202,7 +207,7 @@ export const checkpointAttempts = sqliteTable(
     passed: integer("passed", { mode: "boolean" }).notNull(),
     takenAt: integer("taken_at").notNull(),
   },
-  (t) => [index("checkpoint_user_unit_idx").on(t.userId, t.unitSlug)],
+  (t) => [index("peops_checkpoint_user_unit_idx").on(t.userId, t.unitSlug)],
 );
 
 /** Reusable behavioral anecdotes the mentor can reference, tagged to competencies. */
