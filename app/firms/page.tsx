@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Building2, ArrowUpRight, Brain } from "lucide-react";
+import { Building2, ArrowUpRight, Brain, Columns3 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { listFirms } from "@/lib/db/queries";
@@ -32,12 +32,20 @@ export default async function FirmsPage() {
             before an interview.
           </p>
         </div>
-        <Link
-          href="/firms/quiz"
-          className="inline-flex items-center gap-1.5 rounded-lg border border-border px-4 py-2 text-sm font-medium transition hover:bg-secondary"
-        >
-          <Brain className="h-4 w-4" /> Test yourself
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/firms/compare"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border px-4 py-2 text-sm font-medium transition hover:bg-secondary"
+          >
+            <Columns3 className="h-4 w-4" /> Compare
+          </Link>
+          <Link
+            href="/firms/quiz"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border px-4 py-2 text-sm font-medium transition hover:bg-secondary"
+          >
+            <Brain className="h-4 w-4" /> Test yourself
+          </Link>
+        </div>
       </header>
 
       <div className="grid gap-3 sm:grid-cols-2">

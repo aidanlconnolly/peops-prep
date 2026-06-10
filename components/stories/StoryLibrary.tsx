@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Plus, Trash2, BookMarked } from "lucide-react";
+import { Plus, Trash2, BookMarked, Copy, Check } from "lucide-react";
 import { COMPETENCY_LABELS, type Competency } from "@/lib/content/types";
 import type { Story } from "@/lib/db/schema";
 import { addStory, deleteStory } from "@/lib/actions/stories";
@@ -14,10 +14,31 @@ export function StoryLibrary({ initial }: { initial: Story[] }) {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [tags, setTags] = useState<Competency[]>([]);
+  const [filter, setFilter] = useState<Competency | "all">("all");
+  const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   function toggleTag(c: Competency) {
     setTags((t) => (t.includes(c) ? t.filter((x) => x !== c) : [...t, c]));
+  }
+
+  // Only offer filters for competencies actually present in the library.
+  const presentCompetencies = COMPETENCIES.filter((c) =>
+    stories.some((s) => s.competencies.includes(c)),
+  );
+
+  const visible =
+    filter === "all" ? stories : stories.filter((s) => s.competencies.includes(filter));
+
+  async function copy(s: Story) {
+    try {
+      await navigator.clipboard.writeText(`${s.title}\n\n${s.body}`);
+      setCopiedId(s.id);
+      setTimeout(() => setCopiedId((id) => (id === s.id ? null : id)), 1500);
+    } catch {
+      /* clipboard unavailable */
+    }
   }
 
   function save() {
@@ -44,6 +65,7 @@ export function StoryLibrary({ initial }: { initial: Story[] }) {
   }
 
   function remove(id: string) {
+    setConfirmId(null);
     setStories((s) => s.filter((x) => x.id !== id));
     startTransition(async () => {
       if (!id.startsWith("tmp-")) await deleteStory(id);
@@ -54,7 +76,7 @@ export function StoryLibrary({ initial }: { initial: Story[] }) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          Reusable BCG anecdotes tagged to competencies — your STAR backbone.
+          Reusable anecdotes tagged to competencies — your STAR backbone.
         </p>
         <button
           onClick={() => setOpen((o) => !o)}
@@ -63,6 +85,34 @@ export function StoryLibrary({ initial }: { initial: Story[] }) {
           <Plus className="h-4 w-4" /> Add story
         </button>
       </div>
+
+      {presentCompetencies.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          <button
+            onClick={() => setFilter("all")}
+            className={`rounded-full border px-2.5 py-1 text-xs transition ${
+              filter === "all"
+                ? "border-primary/50 bg-accent text-accent-foreground"
+                : "border-border text-muted-foreground hover:bg-secondary"
+            }`}
+          >
+            All ({stories.length})
+          </button>
+          {presentCompetencies.map((c) => (
+            <button
+              key={c}
+              onClick={() => setFilter(c)}
+              className={`rounded-full border px-2.5 py-1 text-xs transition ${
+                filter === c
+                  ? "border-primary/50 bg-accent text-accent-foreground"
+                  : "border-border text-muted-foreground hover:bg-secondary"
+              }`}
+            >
+              {COMPETENCY_LABELS[c]}
+            </button>
+          ))}
+        </div>
+      )}
 
       {open && (
         <div className="space-y-3 rounded-2xl border border-border bg-card p-5">
@@ -119,19 +169,53 @@ export function StoryLibrary({ initial }: { initial: Story[] }) {
             No stories yet. Add your reusable anecdotes so the mentor can lean on them.
           </p>
         </div>
+      ) : visible.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-border py-10 text-center text-sm text-muted-foreground">
+          No stories tagged {filter !== "all" && COMPETENCY_LABELS[filter]}.
+        </div>
       ) : (
         <div className="space-y-3">
-          {stories.map((s) => (
+          {visible.map((s) => (
             <div key={s.id} className="rounded-2xl border border-border bg-card p-5">
               <div className="flex items-start justify-between gap-3">
                 <h3 className="font-medium text-foreground">{s.title}</h3>
-                <button
-                  onClick={() => remove(s.id)}
-                  className="text-muted-foreground transition hover:text-destructive"
-                  aria-label="Delete story"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
+                <div className="flex shrink-0 items-center gap-1">
+                  <button
+                    onClick={() => copy(s)}
+                    className="text-muted-foreground transition hover:text-foreground"
+                    aria-label="Copy story"
+                  >
+                    {copiedId === s.id ? (
+                      <Check className="h-4 w-4 text-success" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </button>
+                  {confirmId === s.id ? (
+                    <span className="flex items-center gap-1">
+                      <button
+                        onClick={() => remove(s.id)}
+                        className="rounded px-1.5 py-0.5 text-xs font-medium text-destructive transition hover:bg-destructive/10"
+                      >
+                        Delete
+                      </button>
+                      <button
+                        onClick={() => setConfirmId(null)}
+                        className="rounded px-1.5 py-0.5 text-xs text-muted-foreground transition hover:bg-secondary"
+                      >
+                        Cancel
+                      </button>
+                    </span>
+                  ) : (
+                    <button
+                      onClick={() => setConfirmId(s.id)}
+                      className="text-muted-foreground transition hover:text-destructive"
+                      aria-label="Delete story"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
               </div>
               {s.competencies.length > 0 && (
                 <div className="mt-1.5 flex flex-wrap gap-1.5">

@@ -7,6 +7,10 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { QuizFilters } from "@/components/quiz/QuizFilters";
+import { listTopics } from "@/lib/db/queries";
+
+export const dynamic = "force-dynamic";
 
 const DRILLS = [
   {
@@ -35,7 +39,9 @@ const DRILLS = [
   },
 ];
 
-export default function DrillsPage() {
+export default async function DrillsPage() {
+  const topics = await listTopics();
+
   return (
     <div className="space-y-6">
       <header>
@@ -72,6 +78,10 @@ export default function DrillsPage() {
           );
         })}
       </div>
+
+      <QuizFilters
+        topics={topics.map((t) => ({ id: t.id, name: t.name, domain: t.domain }))}
+      />
     </div>
   );
 }

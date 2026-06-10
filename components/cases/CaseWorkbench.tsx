@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Sparkles, Loader2, Eye } from "lucide-react";
+import { Sparkles, Loader2, Eye, Check, Trash2 } from "lucide-react";
 import { GradePanel } from "@/components/grade/GradePanel";
 import { Markdown } from "@/components/Markdown";
+import { useDraft } from "@/lib/useDraft";
 import type { GradeResult } from "@/lib/grading/ai";
 
 const STAGES = [
@@ -21,7 +22,12 @@ export function CaseWorkbench({
   caseId: string;
   modelAnswer: string;
 }) {
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const {
+    value: answers,
+    setValue: setAnswers,
+    clear: clearDraft,
+    hydrated,
+  } = useDraft<Record<string, string>>(`peops:draft:case:${caseId}`, {});
   const [grading, setGrading] = useState(false);
   const [result, setResult] = useState<GradeResult | null>(null);
   const [showModel, setShowModel] = useState(false);
@@ -83,8 +89,26 @@ export function CaseWorkbench({
           </div>
         ))}
 
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-muted-foreground tnum">{wordCount} words</span>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-muted-foreground tnum">{wordCount} words</span>
+            {hydrated && wordCount > 0 && (
+              <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                <Check className="h-3 w-3 text-success" /> Draft saved
+              </span>
+            )}
+            {wordCount > 0 && (
+              <button
+                onClick={() => {
+                  setAnswers({});
+                  clearDraft();
+                }}
+                className="inline-flex items-center gap-1 text-xs text-muted-foreground transition hover:text-destructive"
+              >
+                <Trash2 className="h-3 w-3" /> Clear draft
+              </button>
+            )}
+          </div>
           <button
             onClick={grade}
             disabled={grading || wordCount < 5}

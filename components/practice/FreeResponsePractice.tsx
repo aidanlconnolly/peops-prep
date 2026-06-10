@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Sparkles, Loader2, Eye, ChevronRight } from "lucide-react";
+import { Sparkles, Loader2, Eye, ChevronRight, Check } from "lucide-react";
 import { GradePanel } from "@/components/grade/GradePanel";
+import { useDraft } from "@/lib/useDraft";
 import type { GradeResult } from "@/lib/grading/ai";
 
 export type PracticeItem = {
@@ -15,7 +16,12 @@ export type PracticeItem = {
 
 export function FreeResponsePractice({ items }: { items: PracticeItem[] }) {
   const [activeId, setActiveId] = useState(items[0]?.id ?? "");
-  const [answer, setAnswer] = useState("");
+  const {
+    value: answer,
+    setValue: setAnswer,
+    clear: clearDraft,
+    hydrated,
+  } = useDraft<string>(`peops:draft:practice:${activeId}`, "");
   const [grading, setGrading] = useState(false);
   const [result, setResult] = useState<GradeResult | null>(null);
   const [showExample, setShowExample] = useState(false);
@@ -24,7 +30,6 @@ export function FreeResponsePractice({ items }: { items: PracticeItem[] }) {
 
   function pick(id: string) {
     setActiveId(id);
-    setAnswer("");
     setResult(null);
     setShowExample(false);
   }
@@ -106,8 +111,26 @@ export function FreeResponsePractice({ items }: { items: PracticeItem[] }) {
             rows={8}
             className="mt-4 w-full resize-y rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/60 focus:border-primary"
           />
-          <div className="mt-3 flex items-center justify-between">
-            <span className="text-xs text-muted-foreground tnum">{words} words</span>
+          <div className="mt-3 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-muted-foreground tnum">{words} words</span>
+              {hydrated && words > 0 && (
+                <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                  <Check className="h-3 w-3 text-success" /> Draft saved
+                </span>
+              )}
+              {words > 0 && (
+                <button
+                  onClick={() => {
+                    setAnswer("");
+                    clearDraft();
+                  }}
+                  className="text-xs text-muted-foreground transition hover:text-destructive"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
             <button
               onClick={grade}
               disabled={grading || words < 5}
