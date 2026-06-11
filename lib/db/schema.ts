@@ -128,6 +128,15 @@ export const firms = sqliteTable("firms", {
   order: integer("order").notNull().default(0),
 });
 
+// ── Auth ────────────────────────────────────────────────────────────────────
+/** Accounts. Every per-user table below keys its `userId` off `users.id`. */
+export const users = sqliteTable("users", {
+  id: text("id").primaryKey(),
+  email: text("email").notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
+  createdAt: integer("created_at").notNull(),
+});
+
 // ── User state / progress ──────────────────────────────────────────────────────
 
 export const fsrsCards = sqliteTable(
@@ -236,6 +245,7 @@ export const userStats = sqliteTable("user_stats", {
 });
 
 // ── Inferred row types ─────────────────────────────────────────────────────────
+export type User = typeof users.$inferSelect;
 export type Topic = typeof topics.$inferSelect;
 export type Concept = typeof concepts.$inferSelect;
 export type Question = typeof questions.$inferSelect;

@@ -46,7 +46,7 @@ export async function recordAttempt(input: {
   timeTakenSec?: number;
   sessionId?: string;
 }): Promise<void> {
-  const userId = currentUserId();
+  const userId = await currentUserId();
   await db.insert(schema.attempts).values({
     id: nanoid(),
     userId,
@@ -62,7 +62,7 @@ export async function recordAttempt(input: {
 }
 
 export async function startSession(mode: string): Promise<string> {
-  const userId = currentUserId();
+  const userId = await currentUserId();
   const id = nanoid();
   await db.insert(schema.sessions).values({
     id,

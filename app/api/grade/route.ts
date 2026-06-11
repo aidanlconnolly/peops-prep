@@ -104,7 +104,7 @@ export async function POST(req: Request) {
   try {
     await db.insert(schema.attempts).values({
       id: nanoid(),
-      userId: currentUserId(),
+      userId: await currentUserId(),
       refType,
       refId: body.refId,
       score: result.overall / 100,

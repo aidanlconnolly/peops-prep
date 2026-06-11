@@ -15,8 +15,11 @@ import {
   Sparkles,
   Menu,
   X,
+  UserRound,
+  LogOut,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { logoutAction } from "@/lib/actions/auth";
 
 type NavItem = {
   href: string;
@@ -63,6 +66,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
 
+  // Auth pages render with no app chrome (the route guard sends signed-out
+  // users here before any per-user data loads).
+  if (pathname === "/login" || pathname === "/register") {
+    return <>{children}</>;
+  }
+
   // Lesson/checkpoint routes get a focused, full-screen treatment on mobile:
   // hide the bottom tab bar so the lesson's own footer is reachable.
   const isFocusRoute = /^\/learn\/[^/]+\/[^/]+/.test(pathname);
@@ -83,9 +92,24 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             />
           ))}
         </nav>
-        <div className="flex items-center justify-between border-t border-border px-4 py-3">
-          <span className="text-xs text-muted-foreground">Interview prep</span>
-          <ThemeToggle />
+        <div className="space-y-1 border-t border-border px-3 py-3">
+          <RailLink
+            item={{ href: "/account", label: "Account", icon: UserRound }}
+            active={isActive(pathname, "/account")}
+          />
+          <form action={logoutAction}>
+            <button
+              type="submit"
+              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground transition hover:bg-secondary hover:text-foreground"
+            >
+              <LogOut className="h-4 w-4 shrink-0" />
+              Sign out
+            </button>
+          </form>
+          <div className="flex items-center justify-between px-3 pt-1">
+            <span className="text-xs text-muted-foreground">Interview prep</span>
+            <ThemeToggle />
+          </div>
         </div>
       </aside>
 
@@ -133,6 +157,28 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </Link>
               );
             })}
+            <div className="my-1 border-t border-border" />
+            <Link
+              href="/account"
+              onClick={() => setMenuOpen(false)}
+              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition ${
+                isActive(pathname, "/account")
+                  ? "bg-accent text-accent-foreground"
+                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+              }`}
+            >
+              <UserRound className="h-4 w-4 shrink-0" />
+              Account
+            </Link>
+            <form action={logoutAction}>
+              <button
+                type="submit"
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted-foreground transition hover:bg-secondary hover:text-foreground"
+              >
+                <LogOut className="h-4 w-4 shrink-0" />
+                Sign out
+              </button>
+            </form>
           </nav>
         </div>
       )}

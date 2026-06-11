@@ -64,7 +64,7 @@ function verdictFor(readiness: number): string {
 }
 
 export async function getDashboard(): Promise<DashboardData> {
-  const userId = currentUserId();
+  const userId = await currentUserId();
 
   const [topics, questions, attempts, cards, doneSessions, lessons, checkpoints] =
     await Promise.all([

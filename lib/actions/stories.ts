@@ -8,7 +8,7 @@ import type { Competency } from "@/lib/content/types";
 import type { Story } from "@/lib/db/schema";
 
 export async function listStories(): Promise<Story[]> {
-  const userId = currentUserId();
+  const userId = await currentUserId();
   return db
     .select()
     .from(schema.stories)
@@ -21,7 +21,7 @@ export async function addStory(input: {
   competencies: Competency[];
   body: string;
 }): Promise<void> {
-  const userId = currentUserId();
+  const userId = await currentUserId();
   if (!input.title.trim() || !input.body.trim()) return;
   await db.insert(schema.stories).values({
     id: nanoid(),
@@ -34,7 +34,7 @@ export async function addStory(input: {
 }
 
 export async function deleteStory(id: string): Promise<void> {
-  const userId = currentUserId();
+  const userId = await currentUserId();
   await db
     .delete(schema.stories)
     .where(and(eq(schema.stories.id, id), eq(schema.stories.userId, userId)));

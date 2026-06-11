@@ -17,7 +17,7 @@ import type { RefType } from "@/lib/content/types";
  * Idempotent and cheap: one select + one bulk insert of the missing ids.
  */
 export async function ensureConceptDeck(): Promise<{ added: number }> {
-  const userId = currentUserId();
+  const userId = await currentUserId();
   const concepts = await db
     .select({ id: schema.concepts.id })
     .from(schema.concepts);
@@ -60,7 +60,7 @@ export async function enqueueCard(
   refType: RefType,
   refId: string,
 ): Promise<void> {
-  const userId = currentUserId();
+  const userId = await currentUserId();
   const existing = await db
     .select({ id: schema.fsrsCards.id })
     .from(schema.fsrsCards)
@@ -101,7 +101,7 @@ export type DueCard = {
 
 /** Concept cards currently due (due <= now), oldest first. */
 export async function getDueCards(limit = 40): Promise<DueCard[]> {
-  const userId = currentUserId();
+  const userId = await currentUserId();
   const rows = await db
     .select({
       cardId: schema.fsrsCards.id,
@@ -143,7 +143,7 @@ export async function rateCard(
   cardId: string,
   rating: Rating1to4,
 ): Promise<void> {
-  const userId = currentUserId();
+  const userId = await currentUserId();
   const rows = await db
     .select()
     .from(schema.fsrsCards)
@@ -172,7 +172,7 @@ export async function rateCard(
 export type DeckStats = { total: number; due: number };
 
 export async function getDeckStats(): Promise<DeckStats> {
-  const userId = currentUserId();
+  const userId = await currentUserId();
   const [{ total }] = await db
     .select({ total: sql<number>`count(*)` })
     .from(schema.fsrsCards)

@@ -1,10 +1,11 @@
 /**
- * Auth seam. v1 is a single local user; every per-user query keys off this id.
- * To add real auth later (Clerk/NextAuth), swap the body to read the session —
- * call sites don't change.
+ * Auth seam. Resolves the current user from the signed session cookie.
+ * Throws if unauthenticated — every route is guarded by proxy.ts, so call
+ * sites (server actions + the AI route handlers) only run when a session
+ * exists. Was a single hardcoded id in v1; now backed by real auth.
  */
-export const LOCAL_USER_ID = "me";
+import { requireAuth } from "@/lib/auth";
 
-export function currentUserId(): string {
-  return LOCAL_USER_ID;
+export async function currentUserId(): Promise<string> {
+  return requireAuth();
 }

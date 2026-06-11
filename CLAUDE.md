@@ -4,7 +4,7 @@ Guidance for Claude Code when working in **PeOps Prep**.
 
 ## What this is
 
-A Duolingo-style web app for **private equity portfolio-operations / value-creation interview prep** (KKR Capstone, Bain Capital Portfolio Group, Vista/VCG, Blackstone PortOps, Apollo APPS, Carlyle, CD&R, TPG Ops). Single-user (no auth in v1), port **5550**.
+A Duolingo-style web app for **private equity portfolio-operations / value-creation interview prep** (KKR Capstone, Bain Capital Portfolio Group, Vista/VCG, Blackstone PortOps, Apollo APPS, Carlyle, CD&R, TPG Ops). Per-user email/password auth (jose JWT + bcryptjs, `proxy.ts` route guard), port **5550**.
 
 The app has eight surfaces (nav tabs):
 
@@ -69,7 +69,7 @@ seed/                      # typed seed data → scripts/seed.ts loads it into t
 
 ## Architecture
 
-- **Auth seam (no auth in v1):** `lib/user.ts` exports `currentUserId()` returning `"me"`. Every per-user query keys off it; swap the body for real auth later without touching call sites.
+- **Auth:** per-user email/password (jose JWT in an httpOnly `__session` cookie + bcryptjs). `lib/auth.ts` (session create/read/delete + `requireAuth()`), `lib/actions/auth.ts` (register/login/logout/changePassword), `proxy.ts` (route guard → `/login`; `/login` + `/register` public), `app/{login,register,account}`. The seam `lib/user.ts` `currentUserId()` is now **async** — it returns `requireAuth()` — so every call site `await`s it. Accounts live in the `users` table; every per-user table keys `userId` off `users.id`.
 - **DB:** `lib/db/schema.ts` (Drizzle), `lib/db/client.ts` (lazy Turso+Drizzle init via Proxy — prevents Vercel build-time failures). All backend logic is in `lib/actions/*.ts` (`"use server"`); the only `app/api/` Route Handlers are the AI ones (`/api/grade`, `/api/mentor` streaming).
 - **Two content systems:**
   1. **Seed content** (`seed/` → DB tables `topics, concepts, questions, cases, behavioralPrompts, opsTechnicals, firms`) drives Review, Drills, Cases, Behavioral, Firms. Edit the typed files in `seed/` then `npm run seed`.
@@ -84,4 +84,4 @@ seed/                      # typed seed data → scripts/seed.ts loads it into t
 
 ## Deployment
 
-Live on **Vercel** at **https://peops-prep.vercel.app** (auto-deploys from `main`; project `peops-prep`, team `aidan-s-projects1`). Prod runs on its **own dedicated Turso database** `peops-prep` (`libsql://peops-prep-aidanlconnolly...`, 14 tables). Required Vercel env: `ANTHROPIC_API_KEY`, `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`. Any new dynamic page needs `export const dynamic = "force-dynamic"`. Firm comp figures are approximate — re-verify before an interview.
+Live on **Vercel** at **https://peops-prep.vercel.app** (auto-deploys from `main`; project `peops-prep`, team `aidan-s-projects1`). Prod runs on its **own dedicated Turso database** `peops-prep` (`libsql://peops-prep-aidanlconnolly...`, 14 tables). Required Vercel env: `ANTHROPIC_API_KEY`, `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`, `AUTH_SECRET`. Prod also needs the `users` table created and existing `user_id='me'` rows reassigned to your real account id after you register. Any new dynamic page needs `export const dynamic = "force-dynamic"`. Firm comp figures are approximate — re-verify before an interview.

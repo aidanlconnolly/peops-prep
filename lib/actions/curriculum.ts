@@ -13,7 +13,7 @@ export async function markLessonDone(args: {
   lessonSlug: string;
   score?: number;
 }): Promise<{ ok: boolean }> {
-  const userId = currentUserId();
+  const userId = await currentUserId();
   const now = Date.now();
   const score = args.score ?? 100;
   const existing = await db
@@ -45,7 +45,7 @@ export async function markLessonDone(args: {
 }
 
 export async function getAllLessonProgress() {
-  const userId = currentUserId();
+  const userId = await currentUserId();
   return db
     .select()
     .from(schema.lessonProgress)
@@ -58,7 +58,7 @@ export async function recordCheckpoint(args: {
   unitSlug: string;
   score: number;
 }): Promise<{ ok: boolean; passed: boolean }> {
-  const userId = currentUserId();
+  const userId = await currentUserId();
   const unit = findUnit(args.unitSlug);
   const passingPct = unit?.checkpoint.passingPct ?? 80;
   const passed = args.score >= passingPct;
@@ -80,7 +80,7 @@ export type CheckpointStatus = {
 };
 
 export async function getAllCheckpointStatus(): Promise<CheckpointStatus[]> {
-  const userId = currentUserId();
+  const userId = await currentUserId();
   const rows = await db
     .select()
     .from(schema.checkpointAttempts)
