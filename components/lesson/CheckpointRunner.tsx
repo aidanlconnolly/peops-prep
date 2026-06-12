@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowLeft, ArrowRight, Check, Trophy, RotateCcw } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, X, Trophy, RotateCcw } from "lucide-react";
 import { recordCheckpoint } from "@/lib/actions/curriculum";
 import { PRACTICE_LINKS } from "@/lib/curriculum";
 import type { Unit } from "@/lib/curriculum/types";
@@ -47,7 +47,7 @@ export function CheckpointRunner({ unit }: { unit: Unit }) {
     const score = Math.round((correct / questions.length) * 100);
     const passed = saved?.passed ?? score >= unit.checkpoint.passingPct;
     return (
-      <div className="mx-auto max-w-md py-12 text-center">
+      <div className="mx-auto max-w-lg py-12 text-center">
         <div
           className={`mx-auto grid h-14 w-14 place-items-center rounded-full ${
             passed ? "bg-accent text-accent-foreground" : "bg-secondary text-muted-foreground"
@@ -86,6 +86,66 @@ export function CheckpointRunner({ unit }: { unit: Unit }) {
             {PRACTICE_LINKS[unit.slug].label} →
           </Link>
         )}
+
+        {/* Answer review — see the right answer for every question */}
+        <div className="mt-10 text-left">
+          <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            Review answers
+          </h2>
+          <div className="space-y-3">
+            {questions.map((rq, qi) => {
+              const picked = answers[qi];
+              const wasRight = picked === rq.correct;
+              return (
+                <div key={qi} className="rounded-xl border border-border bg-card p-4">
+                  <p className="text-sm font-medium text-foreground">
+                    <span className="text-muted-foreground tnum">{qi + 1}. </span>
+                    {rq.q}
+                  </p>
+                  <div className="mt-3 space-y-1.5">
+                    {rq.options.map((opt, oi) => {
+                      const isCorrect = oi === rq.correct;
+                      const isPicked = picked === oi;
+                      const wrongPick = isPicked && !isCorrect;
+                      return (
+                        <div
+                          key={oi}
+                          className={`flex items-center gap-2 rounded-lg border p-2.5 text-sm ${
+                            isCorrect
+                              ? "border-success/60 bg-success/10"
+                              : wrongPick
+                                ? "border-destructive/60 bg-destructive/10"
+                                : "border-border"
+                          }`}
+                        >
+                          <span className="flex-1 text-foreground">{opt}</span>
+                          {isPicked && !isCorrect && (
+                            <span className="text-[10px] font-medium uppercase tracking-wide text-destructive">
+                              Your answer
+                            </span>
+                          )}
+                          {isCorrect && (
+                            <span className="text-[10px] font-medium uppercase tracking-wide text-success">
+                              {isPicked ? "Your answer ✓" : "Correct"}
+                            </span>
+                          )}
+                          {isCorrect ? (
+                            <Check className="h-4 w-4 shrink-0 text-success" />
+                          ) : wrongPick ? (
+                            <X className="h-4 w-4 shrink-0 text-destructive" />
+                          ) : null}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {!wasRight && picked == null && (
+                    <p className="mt-2 text-xs text-muted-foreground">You skipped this one.</p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
     );
   }

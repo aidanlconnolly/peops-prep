@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Check, X, RotateCcw } from "lucide-react";
+import { Check, X, RotateCcw, Eye } from "lucide-react";
 import type {
   Mcq,
   Fill,
@@ -210,12 +210,31 @@ function OrderItemUI({
 }) {
   const shuffled = useMemo(() => shuffle(item.tokens.map((t, i) => ({ t, i }))), [item]);
   const [picked, setPicked] = useState<number[]>([]);
+  const [revealed, setRevealed] = useState(false);
   const full = picked.length === item.tokens.length;
   const correct = full && picked.every((idx, pos) => shuffled[idx].i === pos);
+  const solved = correct || revealed;
 
   useEffect(() => {
-    onResolved(full);
-  }, [full, onResolved]);
+    onResolved(full || revealed);
+  }, [full, revealed, onResolved]);
+
+  // Indices into `shuffled` arranged so each token lands in its canonical slot.
+  function reveal() {
+    const inOrder = Array.from({ length: item.tokens.length }, (_, pos) =>
+      shuffled.findIndex((tok) => tok.i === pos),
+    );
+    setPicked(inOrder);
+    setRevealed(true);
+  }
+
+  const borderTone = revealed
+    ? "border-warning/60"
+    : full
+      ? correct
+        ? "border-success/60"
+        : "border-destructive/60"
+      : "border-border";
 
   return (
     <div className="rounded-xl border border-border bg-card p-4">
@@ -225,18 +244,18 @@ function OrderItemUI({
         </div>
       )}
       {/* Assembled */}
-      <div
-        className={`mb-3 flex min-h-10 flex-wrap gap-1.5 rounded-lg border border-dashed p-2 ${
-          full ? (correct ? "border-success/60" : "border-destructive/60") : "border-border"
-        }`}
-      >
+      <div className={`mb-3 flex min-h-10 flex-wrap gap-1.5 rounded-lg border border-dashed p-2 ${borderTone}`}>
         {picked.map((idx, pos) => (
           <button
             key={pos}
             type="button"
+            disabled={solved}
             onClick={() => setPicked((p) => p.filter((_, k) => k !== pos))}
-            className="rounded bg-secondary px-2 py-1 text-xs text-foreground"
+            className={`rounded px-2 py-1 text-xs text-foreground ${
+              revealed ? "bg-warning/15" : "bg-secondary"
+            } disabled:cursor-default`}
           >
+            <span className="mr-1 font-mono text-[10px] text-muted-foreground tnum">{pos + 1}</span>
             {shuffled[idx].t}
           </button>
         ))}
@@ -244,27 +263,45 @@ function OrderItemUI({
           <span className="px-1 py-1 text-xs text-muted-foreground">Tap the steps in order…</span>
         )}
       </div>
-      {/* Bank */}
-      <div className="flex flex-wrap gap-1.5">
-        {shuffled.map((tok, idx) =>
-          picked.includes(idx) ? null : (
-            <button
-              key={idx}
-              type="button"
-              onClick={() => setPicked((p) => [...p, idx])}
-              className="rounded-lg border border-border px-2.5 py-1.5 text-xs text-foreground transition hover:border-primary/40"
-            >
-              {tok.t}
-            </button>
-          ),
-        )}
-      </div>
-      {full && (
-        <div className="mt-2 flex items-center justify-between">
-          <span className={`text-xs ${correct ? "text-success" : "text-destructive"}`}>
-            {correct ? "Correct order." : "Not the right order."}
-          </span>
-          {!correct && (
+      {/* Bank (hidden once solved/revealed) */}
+      {!solved && (
+        <div className="flex flex-wrap gap-1.5">
+          {shuffled.map((tok, idx) =>
+            picked.includes(idx) ? null : (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => setPicked((p) => [...p, idx])}
+                className="rounded-lg border border-border px-2.5 py-1.5 text-xs text-foreground transition hover:border-primary/40"
+              >
+                {tok.t}
+              </button>
+            ),
+          )}
+        </div>
+      )}
+      <div className="mt-2 flex items-center justify-between gap-2">
+        <span
+          className={`text-xs ${
+            revealed
+              ? "text-warning"
+              : full
+                ? correct
+                  ? "text-success"
+                  : "text-destructive"
+                : "text-muted-foreground"
+          }`}
+        >
+          {revealed
+            ? "Revealed — study the correct order above."
+            : full
+              ? correct
+                ? "Correct order."
+                : "Not the right order."
+              : "Stuck? Reveal the answer to keep moving."}
+        </span>
+        <div className="flex shrink-0 items-center gap-3">
+          {full && !correct && !revealed && (
             <button
               type="button"
               onClick={() => setPicked([])}
@@ -273,8 +310,17 @@ function OrderItemUI({
               <RotateCcw className="h-3 w-3" /> Reset
             </button>
           )}
+          {!solved && (
+            <button
+              type="button"
+              onClick={reveal}
+              className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+            >
+              <Eye className="h-3 w-3" /> Reveal answer
+            </button>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
